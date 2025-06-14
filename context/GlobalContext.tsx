@@ -1,6 +1,6 @@
 import { getCurrentUser } from "@/lib/appwrite"
 import { User } from "@/lib/modal"
-import { createContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 
 type GlobalContextType = {
     user: User
@@ -22,6 +22,10 @@ const GlobalContext = createContext<GlobalContextType>({
     refreshPosts: () => {},
     freshPostCnt: 0
 })
+
+export const useGlobalContext = () => {
+    return useContext(GlobalContext)
+}
 
 export const GlobalContextProvider = ({children}: {children: React.ReactNode}) => {
     const [user, setUser] = useState<User>({
@@ -52,6 +56,7 @@ export const GlobalContextProvider = ({children}: {children: React.ReactNode}) =
     }
 
     useEffect(() => {
+        console.log("refreshCnt",refreshCnt)
         getUserInfo()
     }, [refreshCnt])
 
@@ -62,6 +67,7 @@ export const GlobalContextProvider = ({children}: {children: React.ReactNode}) =
                     user, 
                     setUser,
                     refreshUser: () => {
+                        console.log("refresh")
                         setRefreshUserCnt(prev => prev + 1)
                     },
                     refreshPosts: () => {

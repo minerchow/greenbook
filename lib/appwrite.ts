@@ -59,6 +59,7 @@ export const register = async (email: string, password: string, name: string) =>
         // 1. 注册
         const user = await account.create(ID.unique(), email, password, name)
         const avatarUrl = avatars.getInitials(name)
+        console.log("avatarUrl",avatarUrl)
         const res = await createUser(email, name, user.$id, avatarUrl.toString())
         // 2. 登录
         await login(email, password)
