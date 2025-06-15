@@ -1,27 +1,26 @@
 import { useGlobalContext } from '@/context/GlobalContext'
-import { register } from '@/lib/appwrite'
-import { Link, router } from 'expo-router'
+import { login } from '@/lib/appwrite'
+import { Link } from 'expo-router'
 import React, { useState } from 'react'
 import { Alert, Pressable, SafeAreaView, Text, TextInput, View } from 'react-native'
 
-const sign_up = () => {
+const sign_in = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    const [username, setUsername] = useState('')
     const [loading, setLoading] = useState(false)
 
-    const {refreshUser} = useGlobalContext()
+    const { refreshUser } = useGlobalContext()
 
-    const handleSignUp = async () => {
+    const handleSignIn = async () => {
         try {
             setLoading(true)
-            await register(email, password, username)
+            await login(email, password)
             setLoading(false)
-            router.push('/')
-            refreshUser()
+            // router.push('/')
+            // refreshUser()
         } catch (error) {
             console.log(error)
-            Alert.alert('注册失败', '请检查邮箱和密码')
+            Alert.alert('登录失败', '请检查邮箱和密码')
             setLoading(false)
         }
     }
@@ -31,19 +30,12 @@ const sign_up = () => {
         <SafeAreaView className='flex-1 bg-myBackGround'>
             <View className='flex-1 flex-col mx-2'>
 
-                <Text className='text-2xl font-bold text-myGreen text-center mt-20'>注册</Text>
+                <Text className='text-2xl font-bold text-myGreen text-center mt-20'>登录</Text>
 
                 <TextInput
                     placeholder='Email'
                     value={email}
                     onChangeText={setEmail}
-                    className='border border-myGreen rounded-md p-2 mt-6 h-12'
-                />
-
-                <TextInput
-                    placeholder='Username'
-                    value={username}
-                    onChangeText={setUsername}
                     className='border border-myGreen rounded-md p-2 mt-6 h-12'
                 />
 
@@ -57,14 +49,14 @@ const sign_up = () => {
 
                 <Pressable
                     className='bg-myGreen rounded-md p-2 mt-6 h-12 flex items-center justify-center'
-                    onPress={handleSignUp}
+                    onPress={handleSignIn}
                 >
-                    <Text className='text-white text-center font-semibold text-lg'>{loading ? '注册中...' : '注册'}</Text>
+                    <Text className='text-white text-center font-semibold text-lg'>{loading ? '登录中...' : '登录'}</Text>
                 </Pressable>
 
                 <View className='flex-row justify-center mt-4'>
-                    <Text className=''>已有账号？ </Text>
-                    <Link href='/signin' className='text-myGreen'>登录</Link>
+                    <Text className=''>没有账号？ </Text>
+                    <Link href='/sign_up' className='text-myGreen'>注册</Link>
                 </View>
 
             </View>
@@ -73,4 +65,4 @@ const sign_up = () => {
     )
 }
 
-export default sign_up
+export default sign_in

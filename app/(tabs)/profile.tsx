@@ -27,13 +27,14 @@ const profile = () => {
           </Text>
         </View>
 
-        <Link href='/signin' className='p-4 rounded-lg w-full'>
+        <Link href='/sign_in' className='p-4 rounded-lg w-full'>
           <Text className='text-center font-semibold text-lg'>
             登录
           </Text>
         </Link>
 
-        <Link href='/signup' className='p-4 rounded-lg w-full'>
+        <Link href='/sign_up' className='p-4 rounded-lg w-full'>
+
           <Text className='text-center font-semibold text-lg'>
             注册
           </Text>

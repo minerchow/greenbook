@@ -4,6 +4,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
+import { GlobalContextProvider } from '@/context/GlobalContext';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import '../global.css';
 export default function RootLayout() {
@@ -18,6 +19,7 @@ export default function RootLayout() {
   }
 
   return (
+    <GlobalContextProvider>
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -27,5 +29,6 @@ export default function RootLayout() {
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
+    </GlobalContextProvider>
   );
 }
