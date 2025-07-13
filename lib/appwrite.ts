@@ -1,13 +1,39 @@
-import { Account, Avatars, Client, Databases, ID, Query } from 'react-native-appwrite';
+import { Account, Avatars, Client, Databases, ID, ImageGravity, Query, Storage } from 'react-native-appwrite';
 import { User } from './modal';
 const client = new Client().setEndpoint('https://cloud.appwrite.io/v1').setProject('683da0f10007b91c6905')  
 
 const databaseId='683da17c00208f88eb3f';
 const collectionIdUser="6845301f002eb276b62c";
+const collectionIdFollow="684eb996001e08e92235";
+const collectionIdPost = "684eb95e001e03db1ee6"
+const collectionIdComment = "684eb9800009961e5ddc"
 const account = new Account(client);
 const database = new Databases(client);
 const avatars = new Avatars(client);
+const storage = new Storage(client)
+export const uploadFile = async (image_key: string, file: ImageResult) => {
+    try {
+        const res = await storage.createFile(bucketId, image_key, {
+            name: image_key,
+            type: 'image/jpeg',
+            size: file.height * file.width,
+            uri: file.uri
+        })
 
+        const fileId = res.$id
+        
+        const fileUrl = storage.getFilePreview(bucketId, fileId, 640, 640, ImageGravity.Top, 100)
+
+        return {
+            fileId,
+            fileUrl
+        }
+        
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
 // 登录部分API
 
 const createUser = async (email: string, name: string, user_id: string, avatar_url: string) => {
@@ -83,4 +109,116 @@ export const getCurrentUser = async () => {
     }
 
     return null
+}
+
+// 1. post
+export const createPost = async (title: string, content: string, image_url: string, creator_id: string, creator_name: string, creator_avatar_url: string) => {
+    try {
+        const post = await database.createDocument(databaseId, collectionIdPost, ID.unique(), {
+            title,
+            content,
+            image_url,
+            creator_id,
+            creator_name,
+            creator_avatar_url
+        })
+        return post.$id
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+export const getPostById = async (post_id: string) => {
+    try {
+        const res = await database.getDocument(databaseId, collectionIdPost, post_id)
+        return res
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+export const getPosts = async (pageNumber: number, pageSize: number, userIds?: string[]) => {
+    try {
+        let queries = [Query.limit(pageSize), Query.offset(pageNumber * pageSize), Query.orderDesc('$createdAt')]
+        if (userIds) {
+            queries.push(Query.equal('creator_id', userIds))
+        }
+        const posts = await database.listDocuments(databaseId, collectionIdPost, queries)
+        return posts.documents
+    } catch (error) {
+        console.log(error)
+        return []
+    }
+}
+
+// 2. comment
+export const createComment = async (post_id: string, from_user_id: string, content: string, from_user_name: string, from_user_avatar_url: string) => {
+    try {
+        const res = await database.createDocument(databaseId, collectionIdComment, ID.unique(), {
+            post_id,
+            from_user_id,
+            from_user_name,
+            from_user_avatar_url,
+            content
+        })
+
+        return res
+    } catch (error) {
+        console.log('createComment error', error)
+        throw error
+    }
+}
+
+export const getCommentsByPostId = async (post_id: string) => {
+    try {
+        const res = await database.listDocuments(databaseId, collectionIdComment, [Query.equal('post_id', post_id)])
+        return res.documents
+    } catch (error) {
+        console.log('getCommentsByPostId', error)
+        throw error
+    }
+}
+
+// 3. follow
+export const followUser = async (from_user_id: string, to_user_id: string) => {
+    try {
+        const res = await database.createDocument(databaseId, collectionIdFollow, ID.unique(), {
+            from_user_id,
+            to_user_id
+        })
+        return res
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+export const unFollowUser = async (from_user_id: string, to_user_id: string) => {
+    try {
+        const res = await database.listDocuments(databaseId, collectionIdFollow,
+            [Query.equal('from_user_id', from_user_id), Query.equal('to_user_id', to_user_id)])
+        if (res && res.documents) {
+            const deleteRes = await database.deleteDocument(databaseId, collectionIdFollow, res.documents[0].$id)
+            return deleteRes
+        }
+        return null
+
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+export const getFollowingUsers = async (user_id: string) => {
+    try {
+        const res = await database.listDocuments(databaseId, collectionIdFollow,
+            [Query.equal('from_user_id', user_id)]
+        )
+        return res.documents.map((item) => item.to_user_id)
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
 }
